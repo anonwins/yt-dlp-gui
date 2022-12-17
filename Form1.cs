@@ -48,6 +48,7 @@ namespace yt_dlp_gui
 
         private void process_download(string Url, string DlMode)
         {
+            if (textBox2.Text=="") return;
             string mode_str = "";
             // determine flags for download modes
             switch (DlMode)
