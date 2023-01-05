@@ -50,12 +50,12 @@ namespace yt_dlp_gui {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("false")]
-        public string download_mode {
+        public string dl_format {
             get {
-                return ((string)(this["download_mode"]));
+                return ((string)(this["dl_format"]));
             }
             set {
-                this["download_mode"] = value;
+                this["dl_format"] = value;
             }
         }
     }

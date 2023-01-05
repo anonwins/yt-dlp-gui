@@ -8,7 +8,7 @@
     <Setting Name="downloads_path" Type="System.String" Scope="User">
       <Value Profile="(Default)">false</Value>
     </Setting>
-    <Setting Name="download_mode" Type="System.String" Scope="User">
+    <Setting Name="dl_format" Type="System.String" Scope="User">
       <Value Profile="(Default)">false</Value>
     </Setting>
   </Settings>

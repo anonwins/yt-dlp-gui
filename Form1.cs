@@ -10,22 +10,39 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace yt_dlp_gui
 {
     public partial class Form1 : Form
     {
+
+        private string SettingsLoaded = "false";
+
         public Form1()
         {
             InitializeComponent();
+            init_dropdown();
             load_settings();
+        }
+
+        private void init_dropdown()
+        {
+            dropdown1.DisplayMember = "Text";
+            dropdown1.ValueMember = "Value";
+            var items = new[] {
+                 new { Text = "Best", Value = "-f best" },
+                 new { Text = "Audio Only", Value = "-f 140" },
+                 new { Text = "MP3", Value = "-f 140 --extract-audio --audio-format mp3" }
+            };
+            dropdown1.DataSource = items;
         }
 
         private void save_settings()
         {
             Settings1.Default.downloads_path = textBox2.Text;
             Settings1.Default.yt_dl_path = textBox3.Text;
-            Settings1.Default.download_mode = get_current_download_mode();
+            Settings1.Default.dl_format = selected_format();
             Settings1.Default.Save();
         }
 
@@ -33,7 +50,8 @@ namespace yt_dlp_gui
         {
             if (Settings1.Default.downloads_path != "false") textBox2.Text = Settings1.Default.downloads_path;
             if (Settings1.Default.yt_dl_path != "false") textBox3.Text = Settings1.Default.yt_dl_path;
-            if (Settings1.Default.download_mode != "false") set_current_download_mode(Settings1.Default.download_mode);
+            if (Settings1.Default.dl_format != "false") select_format(Settings1.Default.dl_format);
+            SettingsLoaded = "true";
         }
         internal void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
@@ -49,19 +67,11 @@ namespace yt_dlp_gui
         private void process_download(string Url, string DlMode)
         {
             if (textBox2.Text=="") return;
-            string mode_str = "";
-            // determine flags for download modes
-            switch (DlMode)
-            {
-                case "audio":
-                   mode_str = "-f 140";
-                break;
-            }
             string output_tmpl = textBox2.Text+"\\%(title)s.%(ext)s";
             Process process;
             process = new Process();
             process.StartInfo.FileName = textBox3.Text;
-            process.StartInfo.Arguments = mode_str + " -o \"" + output_tmpl + "\" " + Url;
+            process.StartInfo.Arguments = DlMode + " -o \"" + output_tmpl + "\" " + Url;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.RedirectStandardOutput = true;
@@ -78,19 +88,17 @@ namespace yt_dlp_gui
             string url = url_list_field.Lines.First();
             var remain = string.Join("\r\n", url_list_field.Lines.Skip(1));
             url_list_field.Text = remain;
-            process_download(url, get_current_download_mode());
+            process_download(url, selected_format());
         }
 
-        private string get_current_download_mode()
+        private string selected_format()
         {
-            if (radioButton2.Checked) return "audio";  // audio
-            return "video+audio";                      // video+audio 
+            return dropdown1.SelectedValue.ToString();
         }
 
-        private void set_current_download_mode(string mode)
+        private void select_format(string format)
         {
-            if (Settings1.Default.download_mode == "audio") radioButton2.Select();  // audio
-            else radioButton1.Select();                                             // video+audio 
+            dropdown1.SelectedValue = format;
         }
 
         // Downloads Directory Picker
@@ -111,21 +119,18 @@ namespace yt_dlp_gui
             save_settings();
         }
 
-        // DL Mode changed to: Video + Audio
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
-        {
-            save_settings();
-        }
-
-        // DL Mode changed to: Audio
-        private void radioButton2_CheckedChanged(object sender, EventArgs e)
-        {
-            save_settings();
-        }
-
+        // Download button click
         private void button1_Click(object sender, EventArgs e)
         {
             process_next_entry();
+        }
+
+        // Format changed
+        private void dropdown1_SelectedValueChanged(object sender, EventArgs e)
+        {
+            if (SettingsLoaded=="false") return;
+            if (Settings1.Default.dl_format == selected_format()) return;
+            save_settings();
         }
     }
 }
